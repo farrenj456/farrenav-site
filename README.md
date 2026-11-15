@@ -5,7 +5,6 @@ Joey Farren's availability calendar, published with GitHub Pages.
 - `site/`: the published site (calendar page, styles, enquiry form, `privacy/`).
 - `tools/build.mjs`: fetches Apple Calendar, keeps only dates (no titles, places or notes), writes `site/calendar.json` and the email snapshot at `/api/availability-snapshot/`.
 - `.github/workflows/pages.yml`: runs the build every 10 minutes and on every push, then publishes `site/`.
-- `av-technician/`: the older AV Technician page. Not published.
 
 The iCloud calendar links are repository secrets (Settings → Secrets and variables → Actions):
 `ICS_URL`, `UNAVAILABLE_ICS_URL` (unavailable) and `PROVISIONAL_ICS_URL` (provisional).
