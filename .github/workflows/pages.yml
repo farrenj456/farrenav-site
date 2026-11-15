@@ -1,0 +1,88 @@
+# Publishes farrenav.co.uk (the availability calendar in site/) to GitHub Pages.
+# Runs on every push, every 10 minutes (to pick up Apple Calendar changes), and by hand.
+# The iCloud calendar links are repository secrets: ICS_URL, UNAVAILABLE_ICS_URL, PROVISIONAL_ICS_URL.
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch calendar and build snapshot
+        run: node tools/build.mjs
+        env:
+          ICS_URL: ${{ secrets.ICS_URL }}
+          UNAVAILABLE_ICS_URL: ${{ secrets.UNAVAILABLE_ICS_URL }}
+          PROVISIONAL_ICS_URL: ${{ secrets.PROVISIONAL_ICS_URL }}
+          SITE_URL: https://farrenav.co.uk
+
+      # On the 10-minute timer, only publish when the calendar or snapshot actually changed.
+      - name: Compare with the live site
+        id: compare
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          live_cal="$(curl -fsS --max-time 20 "https://farrenav.co.uk/calendar.json?t=$(date +%s)" || true)"
+          live_txt="$(curl -fsS --max-time 20 "https://farrenav.co.uk/api/availability-snapshot/email.txt?t=$(date +%s)" || true)"
+          if [ "$live_cal" = "$(cat site/calendar.json)" ] && [ "$live_txt" = "$(cat site/api/availability-snapshot/email.txt)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; echo "No change since the last publish."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.compare.outputs.changed == 'true'
+        uses: actions/configure-pages@v5
+
+      - if: steps.compare.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  # GitHub pauses timed workflows after 60 days without repository activity.
+  # A tiny empty commit roughly once a month keeps the calendar refreshing.
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          last=$(git log -1 --format=%ct)
+          if [ $(( $(date +%s) - last )) -gt $(( 30 * 24 * 3600 )) ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "Keep the calendar refresh active"
+            git push
+          fi

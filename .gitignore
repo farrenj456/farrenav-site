@@ -1,0 +1,5 @@
+node_modules/
+.DS_Store
+# Built by the GitHub Action on every run; kept out of git so the public history has no calendar data.
+site/calendar.json
+site/api/

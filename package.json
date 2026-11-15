@@ -1,0 +1,9 @@
+{
+  "name": "farrenav-site",
+  "private": true,
+  "type": "module",
+  "description": "farrenav.co.uk: availability calendar (site/) built and published by GitHub Actions",
+  "scripts": {
+    "build": "node tools/build.mjs"
+  }
+}
