@@ -25,7 +25,8 @@
 
   <h2>What it accesses</h2>
   <ul>
-    <li><strong>Gmail (read-only).</strong> It reads recent emails in Joey's own Gmail account to spot work enquiries, bookings and cancellations. It cannot send, delete, label or change any email.</li>
+    <li><strong>Gmail.</strong> It reads recent emails in Joey's own Gmail account to spot work enquiries, bookings and cancellations. When Joey accepts an enquiry made on his availability page, it can send one reply to that client from his Gmail, and only after Joey has read the email and tapped Send. It cannot delete, label or change any email.</li>
+    <li><strong>Availability enquiries.</strong> The name, company, role, email address and dates a client enters in the enquiry form on this site are passed to Joey's private Telegram bot so he can reply. They are not used for anything else.</li>
     <li><strong>Calendar.</strong> It adds, updates and removes events for Joey's own jobs in his own Apple iCloud calendars.</li>
     <li><strong>Messages and notes he sends it.</strong> Text, forwarded messages, voice-memo transcripts and photos that Joey sends to his own private Telegram bot.</li>
     <li><strong>Locations.</strong> Job addresses, used with Google Maps to work out driving and public transport times and costs.</li>

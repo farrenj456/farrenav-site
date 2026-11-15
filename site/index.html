@@ -74,6 +74,7 @@
             /></label>
           </p>
           <input type="hidden" name="dates" id="dates-hidden" value="" />
+          <input type="hidden" name="date-keys" id="date-keys-hidden" value="" />
 
           <div class="date-range-row">
             <div class="field">
@@ -111,7 +112,7 @@
 
           <div class="field">
             <label for="enquiry-email"
-              >Email <span class="label-note">(optional — for new clients)</span></label
+              >Email <span class="label-note">(so Joey can reply)</span></label
             >
             <input
               type="email"
@@ -120,6 +121,7 @@
               autocomplete="email"
               inputmode="email"
               placeholder="you@company.com"
+              required
             />
           </div>
 

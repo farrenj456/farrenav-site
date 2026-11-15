@@ -155,6 +155,9 @@ function syncSelectionUi() {
   datesHidden.value = groups.length
     ? groups.map((group) => formatGroupLabel(group.dates)).join(" · ")
     : "";
+  // Exact days (YYYY-MM-DD) so an accepted enquiry becomes a job with the right dates.
+  const dateKeysHidden = document.getElementById("date-keys-hidden");
+  if (dateKeysHidden) dateKeysHidden.value = [...pickedDates].sort().join(",");
 
   renderGroupsList(groups);
 }
