@@ -40,4 +40,22 @@ for (const [file, format] of outputs) {
   if (result.statusCode !== 200) throw new Error(`Snapshot (${file}) failed: ${result.body.slice(0, 200)}`);
   fs.writeFileSync(path.join(outDir, file), result.body);
 }
+
+// Just the calendar grid, for the monthly client email sent by Joey's agent. builtAt lets the
+// agent check it's today's calendar before putting it in an email.
+{
+  const { buildCalendarSnapshot, loadBusyBlocks } = await import("./snapshot/lib/email-calendar-snapshot.js");
+  const { resolveDisplayName } = await import("./snapshot/lib/site-meta.js");
+  const snap = buildCalendarSnapshot({ displayName: resolveDisplayName(), siteUrl: process.env.SITE_URL, blocks: await loadBusyBlocks() });
+  fs.writeFileSync(
+    path.join(outDir, "calendar-block.json"),
+    JSON.stringify({
+      builtAt: new Date().toISOString(),
+      rangeLabel: snap.rangeLabel,
+      openCount: snap.openCount,
+      provisionalCount: snap.provisionalCount,
+      calendarHtml: snap.calendarHtml,
+    })
+  );
+}
 console.log("snapshot: built");

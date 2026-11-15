@@ -289,10 +289,35 @@ ${pasteHtml}
     `Live calendar: ${siteUrl}`,
   ];
 
+  /**
+   * Just the calendar (legend, month grids, live link), for Joey's monthly client email,
+   * which puts its own words around it.
+   */
+  const calendarHtml = `<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="${COLORS.white}" style="max-width:600px;width:100%;background-color:${COLORS.white};border-collapse:collapse;">
+    <tr>
+      <td style="padding:0 0 8px 0;">
+        ${legendSwatch(COLORS.availableBg, COLORS.available, "Open")}
+        ${legendSwatch(COLORS.provisionalBg, COLORS.provisional, "Provisional")}
+        ${legendSwatch(COLORS.bookedBg, COLORS.booked, "Unavailable")}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:8px 0;">
+        ${monthTables}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:8px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:${COLORS.ink};">
+        <a href="${escapeHtml(siteUrl)}" style="color:${COLORS.available};font-weight:600;">View the live calendar and request dates</a>
+      </td>
+    </tr>
+  </table>`;
+
   return {
     subject,
     html,
     pasteHtml,
+    calendarHtml,
     text: textLines.join("\n"),
     rangeLabel,
     openCount: open.length,

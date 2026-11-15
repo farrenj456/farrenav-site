@@ -39,14 +39,18 @@ jobs:
           PROVISIONAL_ICS_URL: ${{ secrets.PROVISIONAL_ICS_URL }}
           SITE_URL: https://farrenav.co.uk
 
-      # On the 10-minute timer, only publish when the calendar or snapshot actually changed.
+      # On the 10-minute timer, only publish when the calendar or snapshot actually changed,
+      # or when the published calendar block (used by the monthly client email) isn't from today.
       - name: Compare with the live site
         id: compare
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; exit 0; fi
           live_cal="$(curl -fsS --max-time 20 "https://farrenav.co.uk/calendar.json?t=$(date +%s)" || true)"
           live_txt="$(curl -fsS --max-time 20 "https://farrenav.co.uk/api/availability-snapshot/email.txt?t=$(date +%s)" || true)"
-          if [ "$live_cal" = "$(cat site/calendar.json)" ] && [ "$live_txt" = "$(cat site/api/availability-snapshot/email.txt)" ]; then
+          today="$(TZ=Europe/London date +%F)"
+          block_day="$(curl -fsS --max-time 20 "https://farrenav.co.uk/api/availability-snapshot/calendar-block.json?t=$(date +%s)" \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(new Date(JSON.parse(s).builtAt).toLocaleDateString("en-CA",{timeZone:"Europe/London"}))}catch{console.log("none")}})' || echo none)"
+          if [ "$live_cal" = "$(cat site/calendar.json)" ] && [ "$live_txt" = "$(cat site/api/availability-snapshot/email.txt)" ] && [ "$block_day" = "$today" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"; echo "No change since the last publish."
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
